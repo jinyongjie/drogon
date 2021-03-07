@@ -190,6 +190,54 @@ int main()
             LOG_DEBUG << body.data();
             assert(!jsonPtr);
         });
+    bool shouldClose = false;
+    app().registerHandler(
+        "/setClose",
+        [&shouldClose](const HttpRequestPtr &req,
+           std::function<void(const HttpResponsePtr &)> &&callback,
+           string_view &&body,  // here the `body` parameter is converted from
+                                // req->as<string_view>();
+           const std::shared_ptr<Json::Value>
+               &jsonPtr  // here the `jsonPtr` parameter is converted from
+                         // req->as<std::shared_ptr<Json::Value>>();
+        ) {
+            HttpViewData data;
+            data.insert("title", std::string("ApiTest::get"));
+        shouldClose = true;
+        Json::Value ret;
+        ret["ret"] = "ok";
+        auto resp = HttpResponse::newHttpJsonResponse(ret);
+            
+           
+            callback(resp);
+            LOG_DEBUG << body.data();
+            assert(!jsonPtr);
+        });
+    
+    app().registerHandler(
+        "/getClose",
+        [&shouldClose](const HttpRequestPtr &req,
+           std::function<void(const HttpResponsePtr &)> &&callback,
+           string_view &&body,  // here the `body` parameter is converted from
+                                // req->as<string_view>();
+           const std::shared_ptr<Json::Value>
+               &jsonPtr  // here the `jsonPtr` parameter is converted from
+                         // req->as<std::shared_ptr<Json::Value>>();
+        ) {
+            HttpViewData data;
+            data.insert("title", std::string("ApiTest::get"));
+        
+        Json::Value ret;
+        ret["close"] = shouldClose?"yes":"no";
+        shouldClose = false;
+        auto resp = HttpResponse::newHttpJsonResponse(ret);
+            
+           
+            callback(resp);
+            LOG_DEBUG << body.data();
+            assert(!jsonPtr);
+        });
+    
 
     // Functor example
     B b;
